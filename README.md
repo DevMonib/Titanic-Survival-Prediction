@@ -51,7 +51,7 @@ Predict survival with **XGBoost + SMOTE + PyOD** | **Kaggle Score: ~0.82**
 ---
 
 ## WebApp (Live Demo)
-[Try it now!](https://titanic-survival.streamlit.app)  
+[Try it now!](https://titanic-survival-prediction-dev-monib.streamlit.app)  
 *(Interactive survival prediction)*
 
 ---
