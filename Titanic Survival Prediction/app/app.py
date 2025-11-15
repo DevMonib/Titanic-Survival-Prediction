@@ -1,12 +1,14 @@
+# app/app.py - Titanic Survival Predictor (GitHub + Streamlit Cloud Ready)
 import streamlit as st
 import joblib
 import pandas as pd
 import numpy as np
-import re
+import os
 
-# === Absolute Paths (Local System Only) ===
-MODEL_PATH = r"C:\Users\Asus\Desktop\Titanic\Jupyter Notebook\models\titanic_final.pkl"
-PREPROCESSOR_PATH = r"C:\Users\Asus\Desktop\Titanic\Jupyter Notebook\models\preprocessor.pkl"
+# === Relative Paths ===
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODEL_PATH = os.path.join(BASE_DIR, "models", "titanic_final.pkl")
+PREPROCESSOR_PATH = os.path.join(BASE_DIR, "models", "preprocessor.pkl")
 
 # === Load Model & Preprocessor ===
 @st.cache_resource
@@ -18,7 +20,7 @@ def load_models():
         return model, preprocessor
     except Exception as e:
         st.error(f"Failed to load model: {e}")
-        st.info("Check file paths and model files.")
+        st.info("Check if `models/` folder and `.pkl` files are in the repository root.")
         st.stop()
 
 final_model, preprocessor = load_models()
@@ -57,27 +59,28 @@ st.title("Will you survive the Titanic? ship:")
 
 st.markdown("""
 Predict survival based on passenger details.  
-Uses **XGBoost + SMOTE + SHAP** from Kaggle model.
+Uses **XGBoost + SMOTE + SHAP** from Kaggle model.  
+**Kaggle Score: ~0.82**
 """)
 
 # === Input Form ===
 with st.form("titanic_form"):
     col1, col2 = st.columns(2)
-
+    
     with col1:
         pclass = st.selectbox("Passenger Class", [1, 2, 3], help="1=First, 2=Second, 3=Third")
         name = st.text_input("Name", "John Doe")
         sex = st.radio("Sex", ["male", "female"], horizontal=True)
         age = st.slider("Age", 0, 100, 30)
         sibsp = st.slider("Siblings/Spouses Aboard", 0, 8, 0)
-
+    
     with col2:
         parch = st.slider("Parents/Children Aboard", 0, 6, 0)
         ticket = st.text_input("Ticket Number", "A/5 21171")
         fare = st.number_input("Fare (£)", 0.0, 1000.0, 32.0, step=0.1)
         cabin = st.text_input("Cabin", "", placeholder="e.g. C85")
         embarked = st.selectbox("Embarked Port", ["S", "C", "Q"], help="S=Southampton, C=Cherbourg, Q=Queenstown")
-
+    
     submitted = st.form_submit_button("Predict Survival", use_container_width=True)
 
 # === Prediction ===
@@ -88,19 +91,19 @@ if submitted:
         'SibSp': sibsp, 'Parch': parch, 'Ticket': ticket,
         'Fare': fare, 'Cabin': cabin if cabin.strip() else np.nan, 'Embarked': embarked
     }])
-
+    
     # 2. Apply feature engineering
     input_data = add_features(input_data)
-
+    
     try:
         # 3. Preprocess
         X_processed = preprocessor.transform(input_data)
-
+        
         # 4. Predict
         classifier = final_model.named_steps['classifier']
         prediction = classifier.predict(X_processed)[0]
         probability = classifier.predict_proba(X_processed)[0][1]
-
+        
         # 5. Display result
         st.divider()
         if prediction == 1:
@@ -108,10 +111,10 @@ if submitted:
             st.balloons()
         else:
             st.error("**Did not survive.** thumbsdown:")
-
+        
         st.metric("Survival Probability", f"{probability:.1%}")
         st.caption("Top influencing factors: Sex > Title > Pclass > Fare > Age")
-
+        
     except Exception as e:
         st.error(f"Prediction failed: {e}")
         st.info("Check input values and model files.")
