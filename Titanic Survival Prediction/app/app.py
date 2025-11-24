@@ -40,7 +40,7 @@ def add_features(df):
     return df
 
 # === UI ===
-st.title("Will you survive the Titanic? ship:")
+st.title("Will you survive the Titanic? 🚢")
 
 st.markdown("""
 Predict survival using **XGBoost + SMOTE + PyOD**.  
@@ -84,10 +84,10 @@ if submitted:
         
         st.divider()
         if prediction == 1:
-            st.success("**Survived!** thumbsup:")
+            st.success("**Survived!** 👍")
             st.balloons()
         else:
-            st.error("**Did not survive.** thumbsdown:")
+            st.error("**Did not survive.** 👎")
         
         st.metric("Survival Probability", f"{probability:.1%}")
         st.caption("Key factors: Sex > Title > Pclass > Fare > Age")
